@@ -164,7 +164,7 @@ class BST:
     def add(self, value: object) -> None:
         '''
         Adds a new value to the BST by iterative traversal.
-
+        Adapted from the insert() pseudocode in the exploration.
         :param self: The BST instance
         :param value: The value to add to the BST
         '''
