@@ -162,10 +162,31 @@ class BST:
     # ------------------------------------------------------------------ #
 
     def add(self, value: object) -> None:
-        """
-        TODO: Write your implementation
-        """
-        pass
+        '''
+        Adds a new value to the BST by iterative traversal.
+
+        :param self: The BST instance
+        :param value: The value to add to the BST
+        '''
+        # initialize to track new node's parent (p) and start at the root of the tree
+        p = None
+        n= self._root
+        # traverse unitl we hit a leaf (None) and keep track of the parent
+        while n is not None:
+            p = n
+            if value < n.value:
+                n = n.left
+            else:          # a duplicate value will be added to the right subtree
+                n = n.right
+        # create new node containing the value
+        new_node = BSTNode(value)
+        if p is None:          # tree was empty, new node becomes root
+            self._root = new_node  
+        # compare and place 
+        elif value < p.value:
+            p.left = new_node
+        else:
+            p.right = new_node  # a duplicate value will be added to the right subtree
 
     def remove(self, value: object) -> bool:
         """
