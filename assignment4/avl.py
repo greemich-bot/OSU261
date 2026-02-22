@@ -132,39 +132,104 @@ class AVL(BST):
 
     def _balance_factor(self, node: AVLNode) -> int:
         """
-        TODO: Write your implementation
+        gets the balance factor of a node
+        adapted from the psudocode in the AVL Trees and Balancing exploration
+        :param node: the AVLNode we are calculating the balance factor of
+        :return: the balance factor of the node / 0 if the node is None
         """
-        pass
+        if node is None:
+            return 0
+        return self._get_height(node.left) - self._get_height(node.right)
 
     def _get_height(self, node: AVLNode) -> int:
         """
-        TODO: Write your implementation
+        gets the height of a node
+        adapted from the psudocode in the Rotation Implementation exploration
+        :param node: the AVLNode to get the height of
+        :return: the height of the node / -1 if the node is None
         """
-        pass
+        if node is None:
+            return -1
+        else:
+            return node.height
 
     def _rotate_left(self, node: AVLNode) -> AVLNode:
         """
-        TODO: Write your implementation
+        peforms a L rotatation around a node
+        adapted from the psudocode in the Rotation Implementation exploration
+        :param node: the AVLNode we are rotating around
+        :return: the new root of the subtree after rotation
         """
-        pass
+        c = node.right
+        node.right = c.left
+        if node.right is not None:
+            node.right.parent = node
+        c.left = node
+        node.parent = c
+        self._update_height(node)
+        self._update_height(c)
+        return c
 
     def _rotate_right(self, node: AVLNode) -> AVLNode:
         """
-        TODO: Write your implementation
+        prforms a R rotatation around a node
+        adapted from the psudocode in the Rotation Implementation exploration
+        :param node: the AVLNode we are rotating around
+        :return: the new root of the subtree after rotation
         """
-        pass
+        c = node.left
+        node.left = c.right
+        if node.left is not None:
+            node.left.parent = node
+        c.right = node
+        node.parent = c
+        self._update_height(node)
+        self._update_height(c)
+        return c
 
     def _update_height(self, node: AVLNode) -> None:
         """
-        TODO: Write your implementation
+        updates the height of the node whose subtrees have just been modified
+        adapted from the psudocode in the Rotation Implementation exploration
+        :param node: the AVLNode to update the height of
         """
-        pass
+        if node is not None:
+            node.height = 1 + max(self._get_height(node.left), self._get_height(node.right))
 
     def _rebalance(self, node: AVLNode) -> None:
         """
-        TODO: Write your implementation
+        rebalances at each node
+        adapted from the psudocode in the Rotation Implementation exploration
+        :param node: the AVLNode to begin rebalance at
         """
-        pass
+        if self._balance_factor(node)< -1:
+            if self._balance_factor(node.left)>0:
+                node.left = self._rotate_left(node.left)
+                node.left.parent = node
+            newSubtreeRoot= self._rotate_right(node)
+            newSubtreeRoot.parent = node.parent
+            if newSubtreeRoot.parent is None:
+                self._root = newSubtreeRoot
+            else:
+                if newSubtreeRoot.parent.left == node:
+                    newSubtreeRoot.parent.left = newSubtreeRoot
+                else:
+                    newSubtreeRoot.parent.right = newSubtreeRoot
+        elif self._balance_factor(node)>1:
+            if self._balance_factor(node.right)<0:
+                node.right = self._rotate_right(node.right)
+                node.right.parent = node
+            newSubtreeRoot= self._rotate_left(node)
+            newSubtreeRoot.parent = node.parent
+            if newSubtreeRoot.parent is None:
+                self._root = newSubtreeRoot
+            else:
+                if newSubtreeRoot.parent.left == node:
+                    newSubtreeRoot.parent.left = newSubtreeRoot
+                else:
+                    newSubtreeRoot.parent.right = newSubtreeRoot
+        else:
+            self._update_height(node)
 
 
 # ------------------- BASIC TESTING -----------------------------------------
