@@ -3,12 +3,13 @@
 # Course: CS261 - Data Structures
 # Assignment: 4
 # Due Date: Feb 23, 2026
-# Description: Implementation of BST with add, variations of remove, contains,
+# Description: Implementation of BST with add, variations of remove to support different cases, contains,
 # inorder_traversal, find_min, find_max, is_empty, and make_empty methods. 
-# Recursive methods are allowed.
+# Recursive methods are allowed and implemented for the inorder traversal, but iterative methods are used for add, remove, and contains.
 
 
 
+from platform import node
 import random
 from queue_and_stack import Queue, Stack
 
@@ -190,9 +191,39 @@ class BST:
 
     def remove(self, value: object) -> bool:
         """
-        TODO: Write your implementation
+        Removes a value from the BST. by calling the appropriate helper method based on the number of subtrees of the node to be removed.
+        This method and the helper methods are adapted from the remove() pseudocode in the exploration.
+        :param self: The BST instance
+        :param value: The value to remove from the BST
+        :return: True if the value was removed, False if the value was not found
         """
-        pass
+        # find the node to remove and its parent
+        p = None
+        n = self._root
+        # same traversal as add() but stops if we locate the value
+        while n is not None and n.value != value:
+            p = n
+            if value < n.value:
+                n = n.left
+            else:         
+                n = n.right
+
+        if n is None:  # value not found
+            return False
+
+        # determine which removal method to use and call it
+
+        # there are no subtrees 
+        if n.left is None and n.right is None:
+            self._remove_no_subtrees(p, n)
+        # either a left or right subtree 
+        elif n.left is None or n.right is None:
+            self._remove_one_subtree(p, n)
+        # two subtrees
+        else:
+            self._remove_two_subtrees(p, n)
+
+        return True
 
     # Consider implementing methods that handle different removal scenarios; #
     # you may find that you're able to use some of them in the AVL.          #
@@ -201,62 +232,165 @@ class BST:
     # Change these methods in any way you'd like.                            #
 
     def _remove_no_subtrees(self, remove_parent: BSTNode, remove_node: BSTNode) -> None:
-        """
-        TODO: Write your implementation
-        """
-        # remove node that has no subtrees (no left or right nodes)
-        pass
+        '''
+        Removes a leaf node
+        :param self: The BST instance
+        :param remove_parent: The parent of the node to be removed
+        :param remove_node: The node to be removed
+        '''
+        # remove ONLY leaf node
+        if remove_parent is None:  # removing the root node which is a leaf
+            self._root = None
+        elif remove_parent.left == remove_node: #removing left child leaf node
+            remove_parent.left = None
+        elif remove_parent.right == remove_node: #removing right child leaf node
+            remove_parent.right = None
+
 
     def _remove_one_subtree(self, remove_parent: BSTNode, remove_node: BSTNode) -> None:
-        """
-        TODO: Write your implementation
-        """
-        # remove node that has a left or right subtree (only)
-        pass
+        '''
+        Removes a node with one subtree
+        :param self: The BST instance
+        :param remove_parent: The parent of the node to be removed
+        :param remove_node: The node to be removed
+        '''
+
+        # Store the child "c" of the node to be removed to preserve the subtree
+        if remove_node.left is not None:
+            c = remove_node.left
+        else:
+            c = remove_node.right
+
+        if remove_parent is None:  # removing the root node which has one subtree
+            self._root = c  
+
+        # reconnect the parent of the removed node to the child of the removed node 
+        elif remove_parent.left == remove_node:
+            remove_parent.left = c
+        elif remove_parent.right == remove_node:
+            remove_parent.right = c 
 
     def _remove_two_subtrees(self, remove_parent: BSTNode, remove_node: BSTNode) -> None:
-        """
-        TODO: Write your implementation
-        """
-        # remove node that has two subtrees
-        # need to find inorder successor and its parent (make a method!)
-        pass
+        '''
+        Removes a node with two subtrees and replaces it with its inorder successor.
+        :param self: The BST instance
+        :param remove_parent: The parent of the node to be removed
+        :param remove_node: The node to be removed
+        '''
+        # find the inorder successor "s" and its parent(of successor) "ps"
+        ps = remove_node
+        s = remove_node.right
+        # the successor is always the leftmost node in the right subtree of the node to be removed.
+        while s.left is not None:
+            ps = s
+            s = s.left
 
+        # update the sucessor's pointer to the left subtree of the node to be removed
+        s.left = remove_node.left
+       
+        if s is not remove_node.right:  
+            ps.left = s.right
+            s.right = remove_node.right
+
+        # connect the parent of the removed node to the successor 
+        if remove_parent is None:  # removing the root node 
+            self._root = s
+        elif remove_parent.left == remove_node:
+            remove_parent.left = s
+        else:
+            remove_parent.right = s
+
+    
+              
     def contains(self, value: object) -> bool:
         """
-        TODO: Write your implementation
-        """
-        pass
+        Checks if a value is present in the BST by iteratively traversing the tree.
+        Adapted from the find() pseudocode in the exploration.
+        :param self: The BST instance
+        :param value: The value we are searching for
+        :return: True if the value is found, False otherwise
+       """
+        
+        n= self._root
+        while n is not None:
+            if value == n.value:
+                return True # value found
+            # move left or right based on comparison
+            elif value < n.value:
+                n = n.left
+            else:         
+                n = n.right
+        return False 
+    
+
+    def inOrder(self, node: BSTNode, result: Queue) -> None:
+        '''
+        Helper method for recursive inorder traversal of the BST adapted from the inOrder() pseudocode in the exploration. 
+        :param self: The BST instance
+        :param node: The current node being visited in the traversal
+        :param result: The Queue to store the values in sorted order
+        '''
+        if node is not None:
+            self.inOrder(node.left, result)  
+            result.enqueue(node.value)       
+            self.inOrder(node.right, result) 
 
     def inorder_traversal(self) -> Queue:
         """
-        TODO: Write your implementation
+        Performs an inorder traversal of the BST using inOrder() helper method and stores the values in a Queue to return them in sorted order.
+        :param self: The BST instance
+        :return: A Queue containing the values of the BST in sorted order
         """
-        pass
-
+        result = Queue()
+        self.inOrder(self._root, result)
+        
+        return result         
+    
     def find_min(self) -> object:
         """
-        TODO: Write your implementation
+        Finds the minimum value in the BST by iteratively traversing the leftmost path of the tree from the root
+        similar to how we find the correct successor in the _remove_two_subtrees().
+        :param self: The BST instance
+        :return: The minimum value in the BST, or None if the tree is empty.
         """
-        pass
+        n= self._root
+        if n is None:
+            return None
+        while n.left is not None:
+            n = n.left
+        return n.value
 
     def find_max(self) -> object:
         """
-        TODO: Write your implementation
+        Finds the maximum value in the BST by iteratively traversing the rightmost path of the tree from the root.
+        similar to how we find the correct predecessor in the _remove_two_subtrees().
+        :param self: The BST instance
+        :return: The maximum value in the BST, or None if the tree is empty.
         """
-        pass
+        n= self._root
+        if n is None:
+            return None
+        while n.right is not None:
+            n = n.right
+        return n.value
 
     def is_empty(self) -> bool:
         """
-        TODO: Write your implementation
+        Checks if the BST is empty by checking if the root is None.
+        :return: True if the BST is empty, False otherwise
         """
-        pass
+        if self._root is None:
+            return True
+        else:
+            return False
 
     def make_empty(self) -> None:
         """
-        TODO: Write your implementation
+        Empties the BST by setting the root to None.
+        :param self: The BST instance
         """
-        pass
+        self._root = None
+
 
 
 # ------------------- BASIC TESTING -----------------------------------------
