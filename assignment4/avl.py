@@ -100,9 +100,42 @@ class AVL(BST):
 
     def add(self, value: object) -> None:
         """
-        TODO: Write your implementation
+        adds a value to the AVL, keeping the balance
+        adapted from the psudocode in the Rotation Implementation exploration and BST implementation
+        :param value: the value to be added to the AVL
         """
-        pass
+        #first add the node like standard bst
+        p = None
+        n = self._root
+        while n is not None:
+            p = n
+            if value < n.value:
+                n = n.left
+            elif value > n.value:
+                n = n.right
+            # no duplicates allowed in this tree
+            else:
+                return
+            
+        new_node = AVLNode(value)
+        new_node.parent = p
+
+        if p is None:
+            self._root = new_node
+            return
+        
+        elif value < p.value:
+            p.left = new_node
+        else:
+            p.right = new_node
+
+        #then rebalance at each node
+        while p is not None:
+            self._rebalance(p)
+            p = p.parent
+
+
+
 
     def remove(self, value: object) -> bool:
         """
@@ -139,7 +172,7 @@ class AVL(BST):
         """
         if node is None:
             return 0
-        return self._get_height(node.left) - self._get_height(node.right)
+        return self._get_height(node.right) - self._get_height(node.left)
 
     def _get_height(self, node: AVLNode) -> int:
         """
@@ -160,14 +193,21 @@ class AVL(BST):
         :param node: the AVLNode we are rotating around
         :return: the new root of the subtree after rotation
         """
-        c = node.right
+        #the right child of the node to become the root
+        c = node.right 
+        #attach the childs left subtree to the right of the node
         node.right = c.left
         if node.right is not None:
             node.right.parent = node
+        #attach the node to the left of the child
         c.left = node
+        #update parents so that the child becomes the parent of the node and the node becomes the child of the child
+        c.parent = node.parent 
         node.parent = c
+        #update heights
         self._update_height(node)
         self._update_height(c)
+
         return c
 
     def _rotate_right(self, node: AVLNode) -> AVLNode:
@@ -177,14 +217,21 @@ class AVL(BST):
         :param node: the AVLNode we are rotating around
         :return: the new root of the subtree after rotation
         """
+        #the left child of the node to become the root
         c = node.left
+        #attach the childs right subtree to the left of the node
         node.left = c.right
         if node.left is not None:
             node.left.parent = node
+        #attach the node to the right of the child
         c.right = node
+        #update parents so that the child becomes the parent of the node and the node becomes the child of the child
+        c.parent = node.parent
         node.parent = c
+        #update heights
         self._update_height(node)
         self._update_height(c)
+
         return c
 
     def _update_height(self, node: AVLNode) -> None:
@@ -198,36 +245,43 @@ class AVL(BST):
 
     def _rebalance(self, node: AVLNode) -> None:
         """
-        rebalances at each node
-        adapted from the psudocode in the Rotation Implementation exploration
-        :param node: the AVLNode to begin rebalance at
+        rebalances the tree after the tree was modified with add or remove
+        adapted from the psudocode in the AVL Trees and Balancing exploration
+        :param node: the node we are rebalancing around
         """
-        if self._balance_factor(node)< -1:
-            if self._balance_factor(node.left)>0:
+        # Left heavy
+        if self._balance_factor(node) < -1:
+            p = node.parent  
+            # LR case- rotate left on the left child before rotating right on the node
+            if self._balance_factor(node.left) > 0:
                 node.left = self._rotate_left(node.left)
                 node.left.parent = node
-            newSubtreeRoot= self._rotate_right(node)
-            newSubtreeRoot.parent = node.parent
-            if newSubtreeRoot.parent is None:
+            #rotate right
+            newSubtreeRoot = self._rotate_right(node)
+            # reconnect to parent
+            if p is None:
                 self._root = newSubtreeRoot
+            elif p.left == node:
+                p.left = newSubtreeRoot
             else:
-                if newSubtreeRoot.parent.left == node:
-                    newSubtreeRoot.parent.left = newSubtreeRoot
-                else:
-                    newSubtreeRoot.parent.right = newSubtreeRoot
-        elif self._balance_factor(node)>1:
-            if self._balance_factor(node.right)<0:
+                p.right = newSubtreeRoot
+
+        # Right heavy
+        elif self._balance_factor(node) > 1:
+            p = node.parent  
+            # RL case- rotate right on the right child before rotating left on the node
+            if self._balance_factor(node.right) < 0:
                 node.right = self._rotate_right(node.right)
                 node.right.parent = node
-            newSubtreeRoot= self._rotate_left(node)
-            newSubtreeRoot.parent = node.parent
-            if newSubtreeRoot.parent is None:
+            #rotate left
+            newSubtreeRoot = self._rotate_left(node)
+            # reconnect to parent
+            if p is None:
                 self._root = newSubtreeRoot
+            elif p.left == node:
+                p.left = newSubtreeRoot
             else:
-                if newSubtreeRoot.parent.left == node:
-                    newSubtreeRoot.parent.left = newSubtreeRoot
-                else:
-                    newSubtreeRoot.parent.right = newSubtreeRoot
+                p.right = newSubtreeRoot
         else:
             self._update_height(node)
 
