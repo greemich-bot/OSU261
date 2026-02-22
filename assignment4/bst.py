@@ -6,6 +6,7 @@
 # Description: Implementation of BST with add, variations of remove to support different cases, contains,
 # inorder_traversal, find_min, find_max, is_empty, and make_empty methods. 
 # Recursive methods are allowed and implemented for the inorder traversal, but iterative methods are used for add, remove, and contains.
+# Naming conventions are consistent with the pseudocode provided in the exploration to make logic easier to follow when debugging.
 
 
 
@@ -171,7 +172,7 @@ class BST:
         '''
         # initialize to track new node's parent (p) and start at the root of the tree
         p = None
-        n= self._root
+        n = self._root
         # traverse unitl we hit a leaf (None) and keep track of the parent
         while n is not None:
             p = n
@@ -357,7 +358,7 @@ class BST:
     def find_max(self) -> object:
         """
         Finds the maximum value in the BST by iteratively traversing the rightmost path of the tree from the root.
-        similar to how we find the correct predecessor in the _remove_two_subtrees().
+        similar to how we find the correct successor in the _remove_two_subtrees().
         :param self: The BST instance
         :return: The maximum value in the BST, or None if the tree is empty.
         """

@@ -1,9 +1,11 @@
-# Name:
-# OSU Email:
+# Name: Michael Green
+# OSU Email: greemich@oregonstate.edu
 # Course: CS261 - Data Structures
-# Assignment:
-# Due Date:
-# Description:
+# Assignment:4
+# Due Date:2/23/2026
+# Description: Impementation of AVL tree add() and remove() using several helper methods that rebalance 
+# the tree after it is modified. 
+# Naming conventions are consistent with the pseudocode provided in the exploration to make logic easier to follow when debugging.
 
 
 import random
@@ -129,7 +131,7 @@ class AVL(BST):
         else:
             p.right = new_node
 
-        #then rebalance at each node
+        # then rebalance at each node
         while p is not None:
             self._rebalance(p)
             p = p.parent
@@ -139,29 +141,60 @@ class AVL(BST):
 
     def remove(self, value: object) -> bool:
         """
-        TODO: Write your implementation
+        looks for a value in the AVL and removes it, rebalancing the tree as needed
+        adapted from the psudocode in the Rotation Implementation exploration and BST implementation
+        :param value: the value to be removed from the AVL
+        :return: True if the value was removed, False if the value was not found in
         """
-        pass
+        # first find the node to remove like in a standard bst, keeping track of the parent
+        p= None
+        n = self._root
+        while n is not None and n.value != value:
+            p = n
+            if value < n.value:
+                n = n.left
+            else:
+                n = n.right
+        if n is None:
+            return False
+        
+        if n.left is None and n.right is None:
+            self._remove_no_subtrees(p, n)
+        elif n.left is None or n.right is None:
+            self._remove_one_subtree(p, n)
 
-    # Experiment and see if you can use the optional                         #
-    # subtree removal methods defined in the BST here in the AVL.            #
-    # Call normally using self -> self._remove_no_subtrees(parent, node)     #
-    # You need to override the _remove_two_subtrees() method in any case.    #
-    # Remove these comments.                                                 #
-    # Remove these method stubs if you decide not to use them.               #
-    # Change this method in any way you'd like.                              #
+        # use new _remove_two_subtrees () 
+        # that returns the parent of the sucessor after repacing the value.
+        else:   
+            p = self._remove_two_subtrees(n) 
 
-    def _remove_two_subtrees(self, remove_parent: AVLNode, remove_node: AVLNode) -> AVLNode:
+        while p is not None:
+            self._rebalance(p)
+            p = p.parent
+        return True
+
+    def _remove_two_subtrees(self, remove_node: AVLNode) -> AVLNode:
         """
-        TODO: Write your implementation
+        override of remove two subtrees method that replaces the value of the node with it's inorder succesor
+        :param remove_node: the node to be removed that has two subtrees
+        :return: the parent of the node that was actually removed so we can rebalance starting from there
         """
-        pass
+        # Find the successor (s) and its parent (ps) of the node to be removed like BST
+        ps = remove_node
+        s = remove_node.right
+        while s.left is not None:
+            ps = s
+            s = s.left
+        #replace with the successor value 
+        remove_node.value = s.value
+        #logic to remove the successor after it has been moved.
+        if s.right is not None:
+            self._remove_one_subtree(ps, s)
+        else:
+            self._remove_no_subtrees(ps, s)
+        return ps
 
-    # It's highly recommended to implement                          #
-    # the following methods for balancing the AVL Tree.             #
-    # Remove these comments.                                        #
-    # Remove these method stubs if you decide not to use them.      #
-    # Change these methods in any way you'd like.                   #
+    
 
     def _balance_factor(self, node: AVLNode) -> int:
         """
