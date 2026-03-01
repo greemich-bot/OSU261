@@ -3,7 +3,7 @@
 # Course: CS261 - Data Structures
 # Assignment: 5
 # Due Date: March 2, 2026
-# Description:
+# Description: Iterative array implementation of a minimum heap data structure.
 
 
 from dynamic_array import *
@@ -41,15 +41,36 @@ class MinHeap:
 
     def add(self, node: object) -> None:
         """
-        TODO: Write this implementation
+        Amortized O(log n) adds a new object to the heap while maintaining the heap property
+        :param self: The MinHeap object
+        :param node: The object added to the heap
         """
-        pass
+        #put the new element at the end of the array
+        self._heap.append(node)
+        #compute the inserted elements parent index
+        index = self._heap.length()-1
+        parent = (index - 1) // 2
+        #compare the value of the inserted element with its parent
+        while index > 0 and self._heap[index] < self._heap[parent]:
+            # Swap if the value of the parent is greater(percolate up)
+            vindex = self._heap[index]
+            self._heap[index] = self._heap[parent]
+            self._heap[parent] = vindex
+            index = parent
+            parent = (index - 1) // 2
+            
+
 
     def is_empty(self) -> bool:
         """
-        TODO: Write this implementation
+        O(1) checker for whether the heap is empty or not
+        :param self: The MinHeap object
+        :return: True if the heap is empty, False otherwise
         """
-        pass
+        if self._heap.length() == 0:
+            return True
+        else:
+            return False
 
     def get_min(self) -> object:
         """
