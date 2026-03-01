@@ -6,6 +6,7 @@
 # Description: Iterative array implementation of a minimum heap data structure.
 
 
+
 from dynamic_array import *
 
 
@@ -41,13 +42,14 @@ class MinHeap:
 
     def add(self, node: object) -> None:
         """
-        Amortized O(log n) adds a new object to the heap while maintaining the heap property
+        adds a new object to the heap while maintaining the heap property
+        Amortized O(log n)
         :param self: The MinHeap object
         :param node: The object added to the heap
         """
         #put the new element at the end of the array
         self._heap.append(node)
-        #compute the inserted elements parent index
+        #compute the inserted element's parent index
         index = self._heap.length()-1
         parent = (index - 1) // 2
         #compare the value of the inserted element with its parent
@@ -63,7 +65,8 @@ class MinHeap:
 
     def is_empty(self) -> bool:
         """
-        O(1) checker for whether the heap is empty or not
+        checker for whether the heap is empty or not
+        O(1)
         :param self: The MinHeap object
         :return: True if the heap is empty, False otherwise
         """
@@ -88,12 +91,27 @@ class MinHeap:
 
     def remove_min(self) -> object:
         """
-        amortized O(log n) removes the minimum value (root) of the heap while maintaining the heap property
+        removes the minimum value (root) of the heap while maintaining the heap property
+        amortized O(log n)
         :param self: The MinHeap object     
-        :return: The minimum value in the heap
+        :return: The minimum value in the heap that was removed
         raises MinHeapException if the heap is empty
         """
-        pass
+        #check if the heap is empty
+        if self.is_empty():
+            raise MinHeapException
+        else:
+            #preserve the minimum value to return later
+            minimum =self.get_min()
+            #move the last element to the root
+            self._heap[0] = self._heap[self._heap.length()-1]
+            #remove the last element from the array
+            self._heap.pop()
+            #check if the heap is not empty after removing the minimum element
+            if self._heap.is_empty() == False:
+                #percolate down the new root element to restore the heap property
+                _percolate_down(self._heap, 0)
+            return minimum
 
     def build_heap(self, da: DynamicArray) -> None:
         """
@@ -133,9 +151,34 @@ def heapsort(da: DynamicArray) -> None:
 
 def _percolate_down(da: DynamicArray, parent: int) -> None:
     """
-    TODO: Write your implementation
+    helper method for  remove_min() that percolates an element down the heap to restore the heap property iteratively.
+    O(log n) 
+    :param da: The DynamicArray representing the heap
+    :param parent: The index of the element to percolate down
+    :return: None
     """
-    pass
+    percolate = True
+
+    while percolate:
+        #compute the indices of the left and right children of the parent
+        left = 2 * parent + 1
+        right = 2 * parent + 2
+        minimum = parent
+
+        #compare the value of the parent with its children and find the minimum value
+        if left < da.length() and da[left] < da[minimum]:
+            minimum = left   
+        if right < da.length() and da[right] < da[minimum]:
+            minimum = right 
+        #if the minimum value is the parent, then the heap property is satisfied and we can stop percolating down
+        if minimum == parent:
+            break
+
+        #swap the parent with the minimum value
+        temp = da[parent]
+        da[parent] = da[minimum]
+        da[minimum] = temp
+        parent = minimum
 
 
 # ------------------- BASIC TESTING -----------------------------------------
@@ -175,12 +218,12 @@ if __name__ == '__main__':
     print(h)
     print(h.get_min(), h.get_min())
 
-    '''print("\nPDF - remove_min example 1")
+    print("\nPDF - remove_min example 1")
     print("--------------------------")
     h = MinHeap([1, 10, 2, 9, 3, 8, 4, 7, 5, 6])
     while not h.is_empty() and h.is_empty() is not None:
         print(h, end=' ')
-        print(h.remove_min())'''
+        print(h.remove_min())
 
     print("\nPDF - build_heap example 1")
     print("--------------------------")

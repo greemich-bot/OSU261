@@ -215,6 +215,23 @@ class DynamicArray:
         for i in range(index, self._size - 1):
             self._data[i] = self._data[i + 1]   
         self._size -= 1
+    
+    def pop(self) -> None:
+        '''
+        Removes the last element of the dynamic array, resizing if necessary
+        :param self: DynamicArray instance
+        '''
+        if self._size == 0:
+            raise DynamicArrayException
+        
+        #check if resize is needed
+        if self._size < self._capacity / 4 and self._capacity >10:
+            #2* size or min 10
+            new_capacity = max(10, (self._size) * 2)
+            self.resize(new_capacity)  
+        
+        self._size -= 1 
+        
        
          
 
