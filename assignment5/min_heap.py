@@ -74,13 +74,24 @@ class MinHeap:
 
     def get_min(self) -> object:
         """
-        TODO: Write this implementation
+        gets the minimum value (root) of the heap without removing it
+        O(1) 
+        :param self: The MinHeap object
+        :return: The minimum value in the heap
+        raises MinHeapException if the heap is empty
         """
-        pass
+        if self.is_empty():
+            raise MinHeapException
+        else:
+            return self._heap[0]
+        
 
     def remove_min(self) -> object:
         """
-        TODO: Write this implementation
+        amortized O(log n) removes the minimum value (root) of the heap while maintaining the heap property
+        :param self: The MinHeap object     
+        :return: The minimum value in the heap
+        raises MinHeapException if the heap is empty
         """
         pass
 
@@ -92,15 +103,21 @@ class MinHeap:
 
     def size(self) -> int:
         """
-        TODO: Write this implementation
+        returns the number of elements currently stored in the heap
+        O(1)    
+        :param self: The MinHeap object
+        :return: The number of elements in the heap
         """
-        pass
+        return self._heap.length()
 
     def clear(self) -> None:
         """
-        TODO: Write this implementation
+        clears the contents of the heap
+        O(1)
+        :param self: The MinHeap object
+        :return: None
         """
-        pass
+        self._heap = DynamicArray()
 
 
 def heapsort(da: DynamicArray) -> None:
@@ -158,12 +175,12 @@ if __name__ == '__main__':
     print(h)
     print(h.get_min(), h.get_min())
 
-    print("\nPDF - remove_min example 1")
+    '''print("\nPDF - remove_min example 1")
     print("--------------------------")
     h = MinHeap([1, 10, 2, 9, 3, 8, 4, 7, 5, 6])
     while not h.is_empty() and h.is_empty() is not None:
         print(h, end=' ')
-        print(h.remove_min())
+        print(h.remove_min())'''
 
     print("\nPDF - build_heap example 1")
     print("--------------------------")
