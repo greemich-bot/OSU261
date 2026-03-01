@@ -221,12 +221,11 @@ class DynamicArray:
         Removes the last element of the dynamic array, resizing if necessary
         :param self: DynamicArray instance
         '''
+        #check if arrray is empty
         if self._size == 0:
             raise DynamicArrayException
-        
         #check if resize is needed
         if self._size < self._capacity / 4 and self._capacity >10:
-            #2* size or min 10
             new_capacity = max(10, (self._size) * 2)
             self.resize(new_capacity)  
         
