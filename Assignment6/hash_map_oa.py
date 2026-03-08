@@ -93,7 +93,7 @@ class HashMap:
         :param value: the value to be associated with the key in the table
         """
         # if the load factor is too high, resize the table to double its current capacity
-        while self.table_load() >= 0.5:
+        if self.table_load() >= 0.5:
             self.resize_table(self._capacity * 2)
         # find the index to begin probing
         initialIndex = self._hash_function(key) % self._capacity
@@ -140,13 +140,13 @@ class HashMap:
         if not self._is_prime(new_capacity):
             new_capacity = self._next_prime(new_capacity)
         
-        # save the old capacity and buckets for rehashing
+        # save the original capacity and buckets for rehashing
         og_capacity = self._capacity
         og_buckets = self._buckets
         # create new buckets and update capacity and size
         self._capacity = new_capacity
         self._buckets = DynamicArray()
-        # initialize new buckets to None
+        # initialize new buckets to None and reset the size
         for _ in range(self._capacity):
             self._buckets.append(None)  
         self._size = 0
@@ -168,32 +168,77 @@ class HashMap:
         """
         returns the number of empty buckets in the table
         """
-        emptyBuckets = 0
-        for i in range(self._capacity):
-            if self._buckets[i] is None or self._buckets[i].is_tombstone is True:
-                emptyBuckets += 1
-        return emptyBuckets 
+        emptyBuckets = self._capacity - self._size
+        return emptyBuckets
 
     def get(self, key: str) -> object:
         """
         returns the value associated with the given key. if the key is not in the table, returns None.
         :param key: the key to find in the table
         """
-        pass
+        initialIndex = self._hash_function(key) % self._capacity
+        index = initialIndex
+        i = 0
+        # probe until we find an empty bucket
+        while self._buckets[index] is not None:
+            entry = self._buckets[index]
+            # if we find the key
+            if entry.key == key:
+                # if it's a tombstone, return None, otherwise return the value
+                if entry.is_tombstone:
+                    return None
+                else: 
+                    return entry.value
+            # increment i and calculate the next index to probe
+            i += 1
+            index = (initialIndex + i**2) % self._capacity
+        # if we found an empty bucket, the key is not in the table, so return None
+        return None
 
     def contains_key(self, key: str) -> bool:
         """
         checks to see if the given key exists
         :param key: the key to find in the table
         """
-        pass
+        initialIndex = self._hash_function(key) % self._capacity
+        index = initialIndex
+        i = 0
+        # probe until we find an empty bucket
+        while self._buckets[index] is not None:
+            entry = self._buckets[index]
+            # if we find the key
+            if entry.key == key:
+                # if it's a tombstone, return False, otherwise return True
+                if entry.is_tombstone:
+                    return False  
+                else:
+                    return True
+            # increment i and calculate the next index to probe
+            i += 1
+            index = (initialIndex + i**2) % self._capacity
+        # if we found an empty bucket, the key is not in the table, so return False
+        return False
 
     def remove(self, key: str) -> None:
         """
         removes the given key and its value from the hashmap
         :param key: the key to remove from the table
         """
-        pass
+        initialIndex = self._hash_function(key) % self._capacity
+        index = initialIndex
+        i = 0
+        # probe until we find an empty bucket
+        while self._buckets[index] is not None:
+            entry = self._buckets[index]
+            # if we find the key, mark it as a tombstone if it's not already, and update the size
+            if entry.key == key:
+                if not entry.is_tombstone:
+                    entry.is_tombstone = True
+                    self._size -= 1
+                return
+            # increment i and calculate the next index to probe
+            i += 1
+            index = (initialIndex + i**2) % self._capacity
 
     def get_keys_and_values(self) -> DynamicArray:
         """
@@ -209,9 +254,10 @@ class HashMap:
 
     def __iter__(self):
         """
-        TODO: Write this implementation
+        Initializes the iterator
         """
-        pass
+        self._iterIndex = 0
+        return self
 
     def __next__(self):
         """

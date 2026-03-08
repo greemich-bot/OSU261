@@ -117,6 +117,7 @@ class HashMap:
             # add kv pair to the LL using linked list insert() method and update size
             bucket.insert(key, value)
             self._size += 1
+            
 
 
     def resize_table(self, new_capacity: int) -> None:
