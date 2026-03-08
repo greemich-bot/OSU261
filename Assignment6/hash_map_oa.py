@@ -4,6 +4,7 @@
 # Assignment:6 - HashMap with Open Addressing
 # Due Date: 3/12/2026
 # Description: Implementation of hashmap that uses open addressing with quadratic probing for collision resolution.
+# indirerect recursion allowed for put/resize but all other methods are implemented iteratively.
 
 from a6_include import (DynamicArray, HashEntry,
                         hash_function_1, hash_function_2)
@@ -244,13 +245,21 @@ class HashMap:
         """
         returns a dynamic array of all keys and values in the hashmap
         """
-        pass
+        kvArr = DynamicArray()
+        for i in range(self._capacity):
+            entry = self._buckets[i]
+            # only add active entries to the array
+            if entry is not None and not entry.is_tombstone:
+                kvArr.append((entry.key, entry.value))
+        return kvArr
 
     def clear(self) -> None:
         """
         clears the hashmap, removing all keys and values without changing the underlying capacity
         """
-        pass
+        for i in range(self._capacity):
+            self._buckets[i] = None
+        self._size = 0
 
     def __iter__(self):
         """
@@ -261,9 +270,17 @@ class HashMap:
 
     def __next__(self):
         """
-        TODO: Write this implementation
+        returns the next item in the hashmap based on the location of the iterator.
         """
-        pass
+        # loop through the buckets    
+        while self._iterIndex < self._capacity:
+            entry = self._buckets[self._iterIndex]
+            self._iterIndex += 1
+            # looking for the next active entry to return
+            if entry is not None and not entry.is_tombstone:
+                return (HashEntry(entry.key, entry.value))
+        # if we get to the end of the buckets, raise StopIteration
+        raise StopIteration
 
 
 # ------------------- BASIC TESTING ---------------------------------------- #
