@@ -1,9 +1,9 @@
-# Name:
-# OSU Email:
+# Name: Michael Green
+# OSU Email: Greemich@oregonstate.edu
 # Course: CS261 - Data Structures
-# Assignment:
-# Due Date:
-# Description:
+# Assignment:6 - HashMap with Open Addressing
+# Due Date: 3/12/2026
+# Description: Implementation of hashmap that uses open addressing with quadratic probing for collision resolution.
 
 from a6_include import (DynamicArray, HashEntry,
                         hash_function_1, hash_function_2)
@@ -85,57 +85,125 @@ class HashMap:
 
     # ------------------------------------------------------------------ #
 
+    
     def put(self, key: str, value: object) -> None:
         """
-        TODO: Write this implementation
+        adds/updates kv pair in hashmap. if a key exists, the value assosciated is replaced.
+        :param key: the key to be added/updated in the table
+        :param value: the value to be associated with the key in the table
         """
-        pass
+        # if the load factor is too high, resize the table to double its current capacity
+        while self.table_load() >= 0.5:
+            self.resize_table(self._capacity * 2)
+        # find the index to begin probing
+        initialIndex = self._hash_function(key) % self._capacity
+        index = initialIndex
+
+        # iniialize i and firstTombstoneIndex to keep track of the first tombstone we find while probing
+        i = 0   
+        firstTombstoneIndex = None
+        # probe until we find an empty bucket
+        while self._buckets[index] is not None: 
+            entry = self._buckets[index]
+            # if we find the key, update the value and return
+            if entry.key==key:
+                # if it was a tombstone we need to mark it as active again and update the size
+                if entry.is_tombstone:
+                    entry.is_tombstone = False
+                    self._size += 1
+                entry.value = value
+                return
+            # when probing, save the first tombstone so we can use it for insertion if we don't find the key
+            if entry.is_tombstone and firstTombstoneIndex is None:
+                firstTombstoneIndex = index
+            # increment i and calculate the next index to probe
+            i += 1
+            index = (initialIndex + i**2) % self._capacity
+        # if we found a tombstone while probing, put the new kv pair there 
+        if firstTombstoneIndex is not None:
+            self._buckets[firstTombstoneIndex] = HashEntry(key, value)
+        # otherwise, put it in the first empty bucket we found
+        else:
+            self._buckets[index] = HashEntry(key, value)
+        # increment the size in either case.
+        self._size += 1
 
     def resize_table(self, new_capacity: int) -> None:
         """
-        TODO: Write this implementation
+        changes the capacity of the underlying table. all non tombstone links are rehashed.
+        :param new_capacity: the new capacity of the table. 
         """
-        pass
+        # make sure it will fit all the current elements
+        if new_capacity < self._size:
+            return
+        # make sure the new capacity is prime
+        if not self._is_prime(new_capacity):
+            new_capacity = self._next_prime(new_capacity)
+        
+        # save the old capacity and buckets for rehashing
+        og_capacity = self._capacity
+        og_buckets = self._buckets
+        # create new buckets and update capacity and size
+        self._capacity = new_capacity
+        self._buckets = DynamicArray()
+        # initialize new buckets to None
+        for _ in range(self._capacity):
+            self._buckets.append(None)  
+        self._size = 0
+        # rehash only the non tombstone entries from the old buckets
+        for i in range(og_capacity):
+            if og_buckets[i] is not None and og_buckets[i].is_tombstone is False:
+                # indirect recursion allowed for resize and put methods.
+                self.put(og_buckets[i].key, og_buckets[i].value)
 
     def table_load(self) -> float:
         """
-        TODO: Write this implementation
+        returns the current hash table load factor
+        load factor = (number of elements in the table) / (capacity of the table)
         """
-        pass
+        loadFactor = self._size / self._capacity
+        return loadFactor
 
     def empty_buckets(self) -> int:
         """
-        TODO: Write this implementation
+        returns the number of empty buckets in the table
         """
-        pass
+        emptyBuckets = 0
+        for i in range(self._capacity):
+            if self._buckets[i] is None or self._buckets[i].is_tombstone is True:
+                emptyBuckets += 1
+        return emptyBuckets 
 
     def get(self, key: str) -> object:
         """
-        TODO: Write this implementation
+        returns the value associated with the given key. if the key is not in the table, returns None.
+        :param key: the key to find in the table
         """
         pass
 
     def contains_key(self, key: str) -> bool:
         """
-        TODO: Write this implementation
+        checks to see if the given key exists
+        :param key: the key to find in the table
         """
         pass
 
     def remove(self, key: str) -> None:
         """
-        TODO: Write this implementation
+        removes the given key and its value from the hashmap
+        :param key: the key to remove from the table
         """
         pass
 
     def get_keys_and_values(self) -> DynamicArray:
         """
-        TODO: Write this implementation
+        returns a dynamic array of all keys and values in the hashmap
         """
         pass
 
     def clear(self) -> None:
         """
-        TODO: Write this implementation
+        clears the hashmap, removing all keys and values without changing the underlying capacity
         """
         pass
 
