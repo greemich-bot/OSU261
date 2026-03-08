@@ -1,9 +1,12 @@
-# Name:
-# OSU Email:
+# Name: Michael Green
+# OSU Email: greemich@oregonstate.edu
 # Course: CS261 - Data Structures
-# Assignment:
-# Due Date:
-# Description:
+# Assignment:6 separate chaining hash map implementation
+# Due Date: 3/12/26
+# Description: Implementation of hashmap that prevents collisions using chaining.
+# Buckets are implemented using dynamic array class (provided), and each bucket contains a linked list (also provided) to store k/v pairs. 
+# Dynamic array and link list classes are only accessed using thier provided methods, however SLNodes in the linked list can be accessed directly.
+
 
 
 from a6_include import (DynamicArray, LinkedList,
@@ -87,69 +90,213 @@ class HashMap:
         return self._capacity
 
     # ------------------------------------------------------------------ #
+    
 
     def put(self, key: str, value: object) -> None:
         """
-        TODO: Write this implementation
+        updatesor adds k/v pair in the hashmap. if a key exists the value is updated, if not a new k/v is added
+        when called the method checks the load factor and resizes the table if >= 1.0.
+        :param key: the key associated with the value to be added or updated
+        :param value: the value to be added or updated
         """
-        pass
+        # check for resize first
+        if self.table_load() >= 1.0:
+            # double capacity
+            self.resize_table(self._capacity * 2)
+        
+        # compute the element's bucket
+        index = self._hash_function(key) % self._capacity
+        # get the linked list at that bucket
+        bucket = self._buckets[index]
+        # using linked list methods, if key already exists, update value or insert new k/v pair and update size
+        node = bucket.contains(key)
+        if node:
+            # SLNode can be accessed directly.
+            node.value = value
+        else:
+            # add kv pair to the LL using linked list insert() method and update size
+            bucket.insert(key, value)
+            self._size += 1
+
 
     def resize_table(self, new_capacity: int) -> None:
         """
-        TODO: Write this implementation
+        changes the capacity of the underlying table, rehashing all table links to the new table
+        is called by put when the LF is >= 1.0 and also calls put to rehash all k/v pairs to the new table
+        :param new_capacity: the new capacity of the table
         """
-        pass
+        # check if new capacity is not less than 1, if so do nothing
+        if new_capacity < 1:
+            return
+        # make sure new capacity is a prime number
+        if not self._is_prime(new_capacity):
+            # if not prime, find the next prime number and set new capacity to that
+            new_capacity = self._next_prime(new_capacity)
+        #store original capacity and buckets for rehashing
+        og_capacity = self._capacity
+        og_buckets = self._buckets
+        # set new capacity and create new buckets
+        self._capacity = new_capacity
+        self._buckets = DynamicArray()
+        self._size = 0
+
+        # fill new buckets with empty linked lists like in init
+        for _ in range(self._capacity):
+            self._buckets.append(LinkedList())
+
+        # rehash all k/v pairs from old buckets to new buckets
+        for i in range(og_capacity):
+            # for each bucket, get the linked list and traverse it
+            bucket = og_buckets[i]
+            for node in bucket:
+                # indirect recursion allowed for put and resize only
+                self.put(node.key, node.value)
+
+
+
+
+        
 
     def table_load(self) -> float:
         """
-        TODO: Write this implementation
+        current load factor of the table.
+        called by put to see if resize is needed.
+        adapted from the formula in the Exploration
         """
-        pass
+        # load factor = n / m
+        loadFactor = self.get_size() / self.get_capacity()
+        return loadFactor
+        
 
     def empty_buckets(self) -> int:
         """
-        TODO: Write this implementation
+        counts the number of empty buckets in the table.
         """
-        pass
+        #initialize counter
+        counter = 0
+        #loop through all buckets 
+        for i in range(self._capacity):
+            # use linked list length() to check if bucket is empty, if so increment counter
+            if self._buckets[i].length() == 0:
+                counter += 1
+        return counter
 
     def get(self, key: str) -> object:
         """
-        TODO: Write this implementation
+        gets the value associated with the given key in the hashmap or None if key is not found.
+        :param key: the key to get the value for
         """
-        pass
+        # compute the element's bucket
+        index = self._hash_function(key) % self._capacity
+        # get the linked list at that bucket
+        bucket = self._buckets[index]
+        # use linked list contains() to check if key exists
+        node = bucket.contains(key)
+        if node:
+            # SLNode can be accessed directly.
+            return node.value
+        return None
 
     def contains_key(self, key: str) -> bool:
         """
-        TODO: Write this implementation
+        t if the given key is in the hashmap, false otherwise.
+        :param key: the key to check for in the hashmap
         """
-        pass
+        # compute the element's bucket
+        index = self._hash_function(key) % self._capacity
+        # get the linked list at that bucket
+        bucket = self._buckets[index]
+        # use linked list contains() to check if key exists
+        node = bucket.contains(key)
+        if node:
+            return True
+        return False
 
     def remove(self, key: str) -> None:
         """
-        TODO: Write this implementation
+        removes the given key and its value from the hashmap
+        when key is not found the method does nothing.
+        :param key: the key to be removed from the hashmap
         """
-        pass
+        # compute the element's bucket
+        index = self._hash_function(key) % self._capacity
+        # get the linked list at that bucket
+        bucket = self._buckets[index]
+        # use linked list remove() to remove key if it exists, if removed update size
+        node = bucket.contains(key)
+        if node:
+            bucket.remove(key)
+            self._size -= 1
+
 
     def get_keys_and_values(self) -> DynamicArray:
         """
-        TODO: Write this implementation
+        returns a DA of tuples (key, value) stored in the hashmap.
         """
-        pass
+        # initialize storage
+        kvArr = DynamicArray()
+        # loop through all buckets 
+        for i in range(self._capacity):
+            bucket = self._buckets[i]
+            # traverse the linked lists in each bucket 
+            for node in bucket:
+                # use DA append() to add a tuple of the node's key and value to the storage
+                kvArr.append((node.key, node.value))
+        return kvArr
 
     def clear(self) -> None:
         """
-        TODO: Write this implementation
+        O(N) complexity
+        clears the contents of the hashmap without changing the underlying hash table capacity.
+
         """
-        pass
+        # set each bucket to a new empty linked list
+        for i in range(self._capacity):
+            self._buckets[i] = LinkedList()
+        # reset size to 0 but keep the capacity unchanged
+        self._size = 0
 
 
 def find_mode(da: DynamicArray) -> tuple[DynamicArray, int]:
     """
-    TODO: Write this implementation
+    receives a DA (unsorted) and returns a tuple containing a DA of modes values and an integer representing the highest frequency.
     """
     # if you'd like to use a hash map,
     # use this instance of your Separate Chaining HashMap
     map = HashMap()
+
+    # initialize storage and a counter
+    modes = DynamicArray()
+    frequency = 0
+
+    # loop through the input da 
+    for i in range(da.length()):
+        # each unique element becomes a key, the value associated with the key is the number of times it occures in the input.
+        key = da[i]
+        occurrences = map.get(key)
+        # if the key is in the map
+        if map.contains_key(key):
+            # increment its occurence count by 1
+            occurrences += 1
+            # update the key's value with put to the new occurence count
+            map.put(key, occurrences)
+        # if the key is not in the map, add it and initialize its occurence count to 1
+        else:
+            occurrences = 1
+            map.put(key, occurrences)
+        # update the frequency if the value(occurrences) is higher than the current frequency
+        if occurrences > frequency:
+            frequency = occurrences
+
+    # use method to get a da of kv pairs in the format (input element, occurrence count).
+    kvArr = map.get_keys_and_values()
+    # loop through the kv pairs. 
+    for i in range(kvArr.length()):
+        # if the second element = fq, append the first element to the modes DA.
+        if kvArr.get_at_index(i)[1] == frequency:
+            modes.append(kvArr.get_at_index(i)[0])
+
+    return (modes, frequency)
 
 
 # ------------------- BASIC TESTING ---------------------------------------- #
